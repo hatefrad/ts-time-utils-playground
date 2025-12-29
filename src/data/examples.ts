@@ -99,7 +99,7 @@ console.log(subtractTime(new Date(), 3, 'days'));`
       {
         title: 'Start/End of Period',
         description: 'Get the start or end of time periods',
-        code: `import { startOf, endOf, getBusinessDays } from 'ts-time-utils/calculate';
+        code: `import { startOf, endOf, businessDaysBetween } from 'ts-time-utils/calculate';
 
 const date = new Date('2025-09-14T14:30:45');
 
@@ -123,7 +123,7 @@ console.log(endOf(date, 'month'));
 // Business days
 const start = new Date('2025-09-01');
 const end = new Date('2025-09-30');
-console.log(getBusinessDays(start, end));
+console.log(businessDaysBetween(start, end));
 // Number of weekdays in September`
       }
     ]
@@ -161,7 +161,8 @@ console.log(isFuture(new Date('2030-01-01'))); // true`
       {
         title: 'Date Comparisons',
         description: 'Compare dates and check relationships',
-        code: `import { isSameDay, isSameWeek, isSameMonth, isBetween } from 'ts-time-utils/validate';
+        code: `import { isSameDay, isSameWeek, isSameMonth } from 'ts-time-utils/validate';
+import { isBetween } from 'ts-time-utils/calculate';
 
 const date1 = new Date('2025-09-14T10:00');
 const date2 = new Date('2025-09-14T20:00');
@@ -252,7 +253,7 @@ console.log(maxDuration(...durations).toString()); // "2h"`
       {
         title: 'Timezone Conversions',
         description: 'Work with dates across timezones',
-        code: `import { formatInTimeZone, getTimezoneOffset, convertTimezone } from 'ts-time-utils/timezone';
+        code: `import { formatInTimeZone, getTimezoneOffset, convertBetweenZones } from 'ts-time-utils/timezone';
 
 const date = new Date('2025-09-14T12:00:00Z');
 
@@ -271,17 +272,17 @@ console.log(getTimezoneOffset('America/Los_Angeles'));
 // -7 or -8 depending on DST
 
 // Convert between zones
-const converted = convertTimezone(date, 'UTC', 'America/New_York');
+const converted = convertBetweenZones(date, 'UTC', 'America/New_York');
 console.log(converted);`
       },
       {
         title: 'DST Detection',
         description: 'Detect and handle Daylight Saving Time',
-        code: `import { isDST, getNextDSTTransition, isValidTimezone } from 'ts-time-utils/timezone';
+        code: `import { isDST, getNextDSTTransition, isValidTimeZone } from 'ts-time-utils/timezone';
 
 // Check if timezone is valid
-console.log(isValidTimezone('America/New_York')); // true
-console.log(isValidTimezone('Invalid/Zone')); // false
+console.log(isValidTimeZone('America/New_York')); // true
+console.log(isValidTimeZone('Invalid/Zone')); // false
 
 // Check if date is in DST
 const summer = new Date('2025-07-14');
@@ -323,7 +324,7 @@ console.log(getDaysInYear(2025)); // 365`
       {
         title: 'US Holidays',
         description: 'Calculate US federal holidays',
-        code: `import { getEaster, getUSHolidays, getThanksgiving, getMemorialDay } from 'ts-time-utils/calendar';
+        code: `import { getEaster, getUSHolidays, getThanksgivingDay, getMemorialDay } from 'ts-time-utils/calendar';
 
 // Easter (complex calculation!)
 console.log(getEaster(2025));
@@ -335,7 +336,7 @@ holidays.forEach(h => {
 });
 
 // Specific holidays
-console.log('Thanksgiving 2025:', getThanksgiving(2025));
+console.log('Thanksgiving 2025:', getThanksgivingDay(2025));
 console.log('Memorial Day 2025:', getMemorialDay(2025));`
       }
     ]
@@ -348,7 +349,7 @@ console.log('Memorial Day 2025:', getMemorialDay(2025));`
       {
         title: 'Merge & Overlap',
         description: 'Merge overlapping ranges and check overlaps',
-        code: `import { mergeDateRanges, dateRangeOverlap, dateRangeIntersection } from 'ts-time-utils/dateRange';
+        code: `import { mergeDateRanges, dateRangeOverlap, getIntersection } from 'ts-time-utils/dateRange';
 
 // Check overlap
 const range1 = {
@@ -363,7 +364,7 @@ const range2 = {
 console.log(dateRangeOverlap(range1, range2)); // true
 
 // Get intersection
-const intersection = dateRangeIntersection(range1, range2);
+const intersection = getIntersection(range1, range2);
 console.log(intersection);
 // { start: Jan 10, end: Jan 15 }
 
@@ -533,7 +534,7 @@ console.log(info);
       {
         title: 'Sort & Filter',
         description: 'Sort dates and find min/max',
-        code: `import { sortDates, minDate, maxDate, closestDate, farthestDate } from 'ts-time-utils/compare';
+        code: `import { sortDates, minDate, maxDate, closestDate } from 'ts-time-utils/compare';
 
 const dates = [
   new Date('2025-09-15'),
@@ -552,8 +553,7 @@ console.log('Latest:', maxDate(dates).toDateString());
 
 // Find closest to target
 const target = new Date('2025-07-01');
-console.log('Closest to July 1:', closestDate(dates, target).toDateString());
-console.log('Farthest from July 1:', farthestDate(dates, target).toDateString());`
+console.log('Closest to July 1:', closestDate(target, dates).toDateString());`
       },
       {
         title: 'Group Dates',
@@ -568,17 +568,17 @@ const dates = [
   new Date('2025-03-05'),
 ];
 
-// Group by month
+// Group by month (returns Map<string, Date[]>)
 const byMonth = groupDatesByMonth(dates);
-Object.entries(byMonth).forEach(([month, monthDates]) => {
+byMonth.forEach((monthDates, month) => {
   console.log(\`\${month}: \${monthDates.length} dates\`);
 });
 
-// Snap to intervals (e.g., 15-minute slots)
+// Snap to intervals (intervalMinutes)
 const meeting = new Date('2025-09-14T14:37:00');
 console.log('Original:', meeting.toTimeString());
-console.log('Snapped to 15min:', snapDate(meeting, 15, 'minutes').toTimeString());
-console.log('Snapped to hour:', snapDate(meeting, 1, 'hours').toTimeString());`
+console.log('Snapped to 15min:', snapDate(meeting, 15).toTimeString());
+console.log('Snapped to hour:', snapDate(meeting, 60).toTimeString());`
       }
     ]
   },
@@ -640,12 +640,11 @@ console.log(\`Fridays in January: \${fridays.length}\`);`
       {
         title: 'Parse Dates',
         description: 'Parse dates from multiple formats',
-        code: `import { parseDate, parseTime, autoDetectFormat } from 'ts-time-utils/parse';
+        code: `import { parseDate, parseTime, guessDateFormat } from 'ts-time-utils/parse';
 
 // Parse various date formats
 console.log(parseDate('2025-09-14')); // ISO format
 console.log(parseDate('09/14/2025')); // US format
-console.log(parseDate('14/09/2025', 'DD/MM/YYYY')); // UK format
 console.log(parseDate('Sep 14, 2025')); // Named month
 
 // Parse time strings
@@ -654,8 +653,8 @@ console.log(parseTime('2:30 PM')); // { hour: 14, minute: 30 }
 console.log(parseTime('9:15am')); // { hour: 9, minute: 15 }
 
 // Auto-detect format
-console.log(autoDetectFormat('2025-09-14')); // 'YYYY-MM-DD'
-console.log(autoDetectFormat('09/14/2025')); // 'MM/DD/YYYY'`
+console.log(guessDateFormat('2025-09-14')); // 'YYYY-MM-DD'
+console.log(guessDateFormat('09/14/2025')); // 'MM/DD/YYYY'`
       }
     ]
   },
