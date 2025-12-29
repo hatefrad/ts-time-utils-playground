@@ -1,16 +1,98 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import StackBlitzEmbed from '../components/StackBlitzEmbed.astro';
+import { categories } from '../data/examples';
 
+const heroCode = `import { formatDuration, timeAgo, Duration } from 'ts-time-utils';
+
+// Format milliseconds to readable duration
+console.log(formatDuration(3661000));
+// "1 hour, 1 minute, 1 second"
+
+// Get "time ago" strings
+const pastDate = new Date(Date.now() - 3600000);
+console.log(timeAgo(pastDate));
+// "1 hour ago"
+
+// Duration arithmetic
+const meeting = Duration.fromMinutes(45);
+const buffer = Duration.fromMinutes(15);
+const total = meeting.add(buffer);
+console.log(total.toString());
+// "1h"`;
+
+const features = [
+  { icon: '📦', title: 'Lightweight', desc: 'Zero dependencies, pure TypeScript' },
+  { icon: '🌳', title: 'Tree-shakable', desc: 'Import only what you need' },
+  { icon: '⚡', title: '320+ Functions', desc: '26 utility categories' },
+  { icon: '🔧', title: 'TypeScript', desc: 'Full type safety & IntelliSense' },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Home">
+  <!-- Hero -->
+  <section class="py-16 text-center">
+    <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">
+      ts-time-utils
+    </h1>
+    <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+      A comprehensive TypeScript utility library for time, dates, durations, and calendar operations
+    </p>
+
+    <div class="flex justify-center gap-4 mb-8">
+      <code class="bg-gray-800 px-4 py-2 rounded-lg text-sm">
+        npm install ts-time-utils
+      </code>
+    </div>
+
+    <div class="flex justify-center gap-4">
+      <a
+        href="/playground/format"
+        class="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-medium transition-colors"
+      >
+        Try Playground
+      </a>
+      <a
+        href="/docs/format"
+        class="bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+      >
+        View Docs
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="py-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {features.map(({ icon, title, desc }) => (
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
+          <div class="text-3xl mb-2">{icon}</div>
+          <h3 class="font-semibold mb-1">{title}</h3>
+          <p class="text-sm text-gray-500">{desc}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Live Demo -->
+  <section class="py-12">
+    <h2 class="text-2xl font-bold mb-6 text-center">Try it Live</h2>
+    <StackBlitzEmbed code={heroCode} height={450} />
+  </section>
+
+  <!-- Categories -->
+  <section class="py-12">
+    <h2 class="text-2xl font-bold mb-6 text-center">Explore Categories</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {categories.map(({ name, slug, description }) => (
+        <a
+          href={`/playground/${slug}`}
+          class="bg-gray-900 border border-gray-800 rounded-lg p-4 hover:border-blue-500 transition-colors group"
+        >
+          <h3 class="font-semibold group-hover:text-blue-400 transition-colors">{name}</h3>
+          <p class="text-xs text-gray-500 mt-1 line-clamp-2">{description}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>

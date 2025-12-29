@@ -1,0 +1,96 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { categories, type Category } from '../../data/examples';
+
+export function getStaticPaths() {
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category },
+  }));
+}
+
+interface Props {
+  category: Category;
+}
+
+const { category } = Astro.props;
+const currentIndex = categories.findIndex(c => c.slug === category.slug);
+const prevCategory = currentIndex > 0 ? categories[currentIndex - 1] : null;
+const nextCategory = currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
+---
+
+<Layout title={`${category.name} API`}>
+  <div class="flex gap-8">
+    <!-- Sidebar -->
+    <aside class="w-48 shrink-0 hidden md:block">
+      <nav class="sticky top-24">
+        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">API Reference</h3>
+        <ul class="space-y-1">
+          {categories.map(({ name, slug }) => (
+            <li>
+              <a
+                href={`/docs/${slug}`}
+                class:list={[
+                  'block px-3 py-1.5 rounded text-sm transition-colors',
+                  slug === category.slug
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                ]}
+              >
+                {name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0">
+      <header class="mb-8">
+        <div class="flex items-center gap-4 mb-2">
+          <h1 class="text-3xl font-bold">{category.name}</h1>
+          <a
+            href={`/playground/${category.slug}`}
+            class="text-sm bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded transition-colors"
+          >
+            Try in Playground →
+          </a>
+        </div>
+        <p class="text-gray-400">{category.description}</p>
+      </header>
+
+      <section class="mb-8">
+        <h2 class="text-xl font-semibold mb-4">Import</h2>
+        <pre class="bg-gray-900 border border-gray-800 rounded-lg p-4 overflow-x-auto"><code class="text-sm text-gray-300">import {'{ ... }'} from 'ts-time-utils/{category.slug}';</code></pre>
+      </section>
+
+      <section class="space-y-8">
+        <h2 class="text-xl font-semibold">Examples</h2>
+        {category.examples.map((example) => (
+          <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-800">
+              <h3 class="font-medium">{example.title}</h3>
+              <p class="text-sm text-gray-500">{example.description}</p>
+            </div>
+            <pre class="p-4 overflow-x-auto"><code class="text-sm text-gray-300">{example.code}</code></pre>
+          </div>
+        ))}
+      </section>
+
+      <!-- Navigation -->
+      <nav class="flex justify-between mt-12 pt-8 border-t border-gray-800">
+        {prevCategory ? (
+          <a href={`/docs/${prevCategory.slug}`} class="text-blue-400 hover:text-blue-300">
+            ← {prevCategory.name}
+          </a>
+        ) : <span />}
+        {nextCategory ? (
+          <a href={`/docs/${nextCategory.slug}`} class="text-blue-400 hover:text-blue-300">
+            {nextCategory.name} →
+          </a>
+        ) : <span />}
+      </nav>
+    </main>
+  </div>
+</Layout>
