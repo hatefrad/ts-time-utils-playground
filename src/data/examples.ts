@@ -729,6 +729,544 @@ const isWeekend = chain(new Date())
 console.log('Is 2 days from now a weekend?', isWeekend);`
       }
     ]
+  },
+  {
+    name: 'Holidays',
+    slug: 'holidays',
+    description: 'Public holidays for 20+ countries',
+    examples: [
+      {
+        title: 'International Holidays',
+        description: 'Get public holidays for any supported country',
+        code: `import { getHolidays, isHoliday, getNextHoliday } from 'ts-time-utils/holidays';
+
+// Get all UK bank holidays for 2025
+const ukHolidays = getHolidays(2025, 'UK');
+ukHolidays.forEach(h => {
+  console.log(\`\${h.name}: \${h.date.toDateString()}\`);
+});
+
+// German holidays
+const deHolidays = getHolidays(2025, 'DE');
+console.log(\`Germany has \${deHolidays.length} public holidays\`);
+
+// Check if a date is a holiday
+const christmas = new Date('2025-12-25');
+console.log('Is Christmas a US holiday?', isHoliday(christmas, 'US'));
+console.log('Is Christmas a JP holiday?', isHoliday(christmas, 'JP'));
+
+// Get the next holiday from today
+const nextCA = getNextHoliday(new Date(), 'CA');
+console.log('Next Canadian holiday:', nextCA?.name);
+
+// Supported countries:
+// UK, NL, DE, CA, AU, IT, ES, CN, IN, US,
+// JP, FR, BR, MX, KR, SG, PL, SE, BE, CH`
+      }
+    ]
+  },
+  {
+    name: 'Locale',
+    slug: 'locale',
+    description: 'Multi-language formatting with 40+ locales',
+    examples: [
+      {
+        title: 'Localized Formatting',
+        description: 'Format dates and relative times in different languages',
+        code: `import { formatRelativeTime, formatDateLocale, detectLocale } from 'ts-time-utils/locale';
+
+const pastDate = new Date(Date.now() - 2 * 60 * 60 * 1000); // 2 hours ago
+
+// Relative time in different languages
+console.log(formatRelativeTime(pastDate, { locale: 'en' }));
+// "2 hours ago"
+
+console.log(formatRelativeTime(pastDate, { locale: 'es' }));
+// "hace 2 horas"
+
+console.log(formatRelativeTime(pastDate, { locale: 'de' }));
+// "vor 2 Stunden"
+
+console.log(formatRelativeTime(pastDate, { locale: 'fr' }));
+// "il y a 2 heures"
+
+console.log(formatRelativeTime(pastDate, { locale: 'ja' }));
+// "2時間前"
+
+// Format dates in locale
+const date = new Date('2025-01-15');
+console.log(formatDateLocale(date, 'en', 'long'));
+// "January 15, 2025"
+
+console.log(formatDateLocale(date, 'fr', 'long'));
+// "15 janvier 2025"
+
+console.log(formatDateLocale(date, 'zh', 'long'));
+// "2025年1月15日"
+
+// Auto-detect system locale
+console.log('Detected locale:', detectLocale());`
+      }
+    ]
+  },
+  {
+    name: 'Working Hours',
+    slug: 'workingHours',
+    description: 'Business hours calculations with break support',
+    examples: [
+      {
+        title: 'Business Hours',
+        description: 'Calculate working time accounting for schedules',
+        code: `import { isWorkingTime, addWorkingDays, workingDaysBetween } from 'ts-time-utils/workingHours';
+
+// Define working hours config
+const config = {
+  workDays: [1, 2, 3, 4, 5], // Mon-Fri
+  startHour: 9,
+  endHour: 17,
+  breaks: [{ start: 12, end: 13 }] // Lunch break
+};
+
+// Check if currently working time
+const monday10am = new Date('2025-09-15T10:00:00');
+const saturday = new Date('2025-09-13T10:00:00');
+const lunchTime = new Date('2025-09-15T12:30:00');
+
+console.log('Mon 10am working?', isWorkingTime(monday10am, config));
+// true
+
+console.log('Saturday working?', isWorkingTime(saturday, config));
+// false
+
+console.log('During lunch?', isWorkingTime(lunchTime, config));
+// false (during break)
+
+// Add working days (skips weekends)
+const friday = new Date('2025-09-12');
+const afterWorkDays = addWorkingDays(friday, 3, config);
+console.log('3 working days after Friday:', afterWorkDays.toDateString());
+// Wednesday (skips Sat, Sun)
+
+// Count working days between dates
+const start = new Date('2025-09-01');
+const end = new Date('2025-09-30');
+console.log('Working days in Sep:', workingDaysBetween(start, end, config));`
+      }
+    ]
+  },
+  {
+    name: 'Serialize',
+    slug: 'serialize',
+    description: 'Safe JSON date serialization and deserialization',
+    examples: [
+      {
+        title: 'JSON Serialization',
+        description: 'Safely serialize and parse dates in JSON',
+        code: `import { serializeDate, parseJSONWithDates, stringifyWithDates } from 'ts-time-utils/serialize';
+
+const date = new Date('2025-09-14T12:30:45.123Z');
+
+// Serialize to different formats
+console.log(serializeDate(date, { format: 'iso' }));
+// "2025-09-14T12:30:45.123Z"
+
+console.log(serializeDate(date, { format: 'epoch' }));
+// 1757853045123
+
+console.log(serializeDate(date, { format: 'date-only' }));
+// "2025-09-14"
+
+// Stringify objects with date fields
+const data = {
+  id: 1,
+  name: 'Meeting',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  tags: ['important']
+};
+
+// Specify which fields are dates
+const json = stringifyWithDates(data, ['createdAt', 'updatedAt']);
+console.log(json);
+
+// Parse JSON back with dates restored
+const parsed = parseJSONWithDates(json, ['createdAt', 'updatedAt']);
+console.log(parsed.createdAt instanceof Date); // true
+console.log(parsed.updatedAt instanceof Date); // true`
+      }
+    ]
+  },
+  {
+    name: 'Performance',
+    slug: 'performance',
+    description: 'Async utilities, benchmarking, and timing',
+    examples: [
+      {
+        title: 'Timing & Benchmarks',
+        description: 'Measure performance and control async timing',
+        code: `import { sleep, benchmark, Stopwatch, debounce, throttle } from 'ts-time-utils/performance';
+
+// Sleep/delay
+async function demo() {
+  console.log('Starting...');
+  await sleep(1000); // Wait 1 second
+  console.log('Done!');
+}
+
+// Benchmark a function
+async function benchmarkDemo() {
+  const results = await benchmark(() => {
+    // Heavy operation
+    Array.from({ length: 10000 }, (_, i) => i * 2);
+  }, 100); // Run 100 times
+
+  console.log(\`Average: \${results.average.toFixed(2)}ms\`);
+  console.log(\`Min: \${results.min.toFixed(2)}ms\`);
+  console.log(\`Max: \${results.max.toFixed(2)}ms\`);
+}
+
+// Stopwatch for manual timing
+const stopwatch = new Stopwatch();
+stopwatch.start();
+// ... do some work ...
+stopwatch.lap(); // Record lap
+// ... more work ...
+console.log('Elapsed:', stopwatch.getElapsed(), 'ms');
+console.log('Laps:', stopwatch.getLaps());
+stopwatch.stop();
+
+// Debounce (wait until calls stop)
+const debouncedSave = debounce((data) => {
+  console.log('Saving:', data);
+}, 300);
+
+// Throttle (max once per interval)
+const throttledLog = throttle((msg) => {
+  console.log(msg);
+}, 1000);`
+      }
+    ]
+  },
+  {
+    name: 'Age',
+    slug: 'age',
+    description: 'Age calculations and birthday utilities',
+    examples: [
+      {
+        title: 'Age & Birthday',
+        description: 'Calculate ages and work with birthdays',
+        code: `import { calculateAge, getLifeStage, getNextBirthday, getDaysUntilBirthday } from 'ts-time-utils/age';
+
+const birthDate = new Date('1990-05-15');
+
+// Calculate detailed age
+const age = calculateAge(birthDate);
+console.log(\`Age: \${age.years} years, \${age.months} months, \${age.days} days\`);
+// "Age: 35 years, 4 months, 2 days"
+
+console.log(\`Total months: \${age.totalMonths}\`);
+console.log(\`Total days: \${age.totalDays}\`);
+
+// Get life stage
+console.log(getLifeStage(5));   // "child"
+console.log(getLifeStage(15));  // "teenager"
+console.log(getLifeStage(25));  // "adult"
+console.log(getLifeStage(65));  // "senior"
+
+// Next birthday
+const nextBday = getNextBirthday(birthDate);
+console.log('Next birthday:', nextBday.toDateString());
+
+// Days until birthday
+const daysLeft = getDaysUntilBirthday(birthDate);
+console.log(\`Days until birthday: \${daysLeft}\`);
+
+// Check if birthday is today
+const today = new Date();
+const isBirthdayToday = calculateAge(birthDate, today).months === 0
+  && calculateAge(birthDate, today).days === 0;
+console.log('Birthday today?', isBirthdayToday);`
+      }
+    ]
+  },
+  {
+    name: 'Countdown',
+    slug: 'countdown',
+    description: 'Timer and countdown utilities',
+    examples: [
+      {
+        title: 'Countdown Timer',
+        description: 'Create countdowns with callbacks',
+        code: `import { createCountdown, getRemainingTime, formatCountdown } from 'ts-time-utils/countdown';
+
+// Target date (New Year 2026)
+const newYear = new Date('2026-01-01T00:00:00');
+
+// Get remaining time
+const remaining = getRemainingTime(newYear);
+console.log(\`Days: \${remaining.days}\`);
+console.log(\`Hours: \${remaining.hours}\`);
+console.log(\`Minutes: \${remaining.minutes}\`);
+console.log(\`Seconds: \${remaining.seconds}\`);
+
+// Format countdown string
+console.log(formatCountdown(newYear));
+// "45d 12h 30m 15s"
+
+console.log(formatCountdown(newYear, { units: ['days', 'hours'] }));
+// "45d 12h"
+
+console.log(formatCountdown(newYear, { separator: ' : ' }));
+// "45d : 12h : 30m : 15s"
+
+// Create interactive countdown
+const countdown = createCountdown(newYear, {
+  onTick: (remaining) => {
+    console.log(\`\${remaining.days}d \${remaining.hours}h \${remaining.minutes}m\`);
+  },
+  onComplete: () => {
+    console.log('Happy New Year!');
+  },
+  interval: 1000 // Update every second
+});
+
+countdown.start();
+// countdown.pause();
+// countdown.resume();
+// countdown.stop();`
+      }
+    ]
+  },
+  {
+    name: 'Interval',
+    slug: 'interval',
+    description: 'Time interval operations',
+    examples: [
+      {
+        title: 'Interval Operations',
+        description: 'Work with time intervals and check overlaps',
+        code: `import { createInterval, intervalsOverlap, mergeIntervals, subtractInterval } from 'ts-time-utils/interval';
+
+// Create intervals
+const meeting1 = createInterval('2025-01-15T09:00', '2025-01-15T10:00');
+const meeting2 = createInterval('2025-01-15T09:30', '2025-01-15T11:00');
+const meeting3 = createInterval('2025-01-15T14:00', '2025-01-15T15:00');
+
+console.log('Meeting 1:', meeting1.start, '-', meeting1.end);
+
+// Check overlap
+console.log('1 & 2 overlap?', intervalsOverlap(meeting1, meeting2));
+// true
+
+console.log('1 & 3 overlap?', intervalsOverlap(meeting1, meeting3));
+// false
+
+// Merge overlapping intervals
+const allMeetings = [meeting1, meeting2, meeting3];
+const merged = mergeIntervals(allMeetings);
+console.log(\`\${allMeetings.length} meetings merged to \${merged.length}\`);
+// "3 meetings merged to 2"
+
+// Subtract interval (find free time)
+const workday = createInterval('2025-01-15T08:00', '2025-01-15T18:00');
+const freeSlots = subtractInterval(workday, meeting1);
+console.log('Free slots after removing meeting 1:', freeSlots.length);
+
+// Get interval duration
+console.log('Meeting 1 duration:', meeting1.duration, 'ms');`
+      }
+    ]
+  },
+  {
+    name: 'Range Presets',
+    slug: 'rangePresets',
+    description: 'Common date range presets',
+    examples: [
+      {
+        title: 'Date Range Presets',
+        description: 'Quick access to common date ranges',
+        code: `import {
+  today, yesterday, tomorrow,
+  lastNDays, nextNDays,
+  thisWeek, lastWeek, nextWeek,
+  thisMonth, lastMonth, nextMonth,
+  thisQuarter, thisYear
+} from 'ts-time-utils/rangePresets';
+
+// Today's range (start to end of day)
+const todayRange = today();
+console.log('Today:', todayRange.start, '-', todayRange.end);
+
+// Yesterday and tomorrow
+console.log('Yesterday:', yesterday().start.toDateString());
+console.log('Tomorrow:', tomorrow().start.toDateString());
+
+// Last N days
+const last7 = lastNDays(7);
+console.log('Last 7 days:', last7.start.toDateString(), '-', last7.end.toDateString());
+
+// Next N days
+const next30 = nextNDays(30);
+console.log('Next 30 days:', next30.start.toDateString(), '-', next30.end.toDateString());
+
+// Week ranges
+console.log('This week:', thisWeek().start.toDateString());
+console.log('Last week:', lastWeek().start.toDateString());
+console.log('Next week:', nextWeek().start.toDateString());
+
+// Month ranges
+console.log('This month:', thisMonth().start.toDateString());
+console.log('Last month:', lastMonth().start.toDateString());
+
+// Quarter and year
+console.log('This quarter:', thisQuarter().start.toDateString());
+console.log('This year:', thisYear().start.toDateString());`
+      }
+    ]
+  },
+  {
+    name: 'Calendars',
+    slug: 'calendars',
+    description: 'Non-Gregorian calendars (Hebrew, Islamic, Japanese, etc.)',
+    examples: [
+      {
+        title: 'Calendar Conversions',
+        description: 'Convert dates between calendar systems',
+        code: `import {
+  toHebrewDate, toIslamicDate, toJapaneseDate,
+  toBuddhistDate, toPersianDate, getChineseZodiac
+} from 'ts-time-utils/calendars';
+
+const date = new Date('2025-09-14');
+
+// Hebrew calendar
+const hebrew = toHebrewDate(date);
+console.log(\`Hebrew: \${hebrew.year}-\${hebrew.month}-\${hebrew.day}\`);
+console.log(\`Calendar: \${hebrew.calendar}\`);
+// { year: 5785, month: 6, day: 11, calendar: 'hebrew' }
+
+// Islamic calendar
+const islamic = toIslamicDate(date);
+console.log(\`Islamic: \${islamic.year}-\${islamic.month}-\${islamic.day}\`);
+// { year: 1447, month: 3, day: 11, calendar: 'islamic-umalqura' }
+
+// Japanese calendar (with era)
+const japanese = toJapaneseDate(date);
+console.log(\`Japanese: \${japanese.era} \${japanese.year}\`);
+// { year: 7, era: 'Reiwa', calendar: 'japanese' }
+
+// Buddhist calendar
+const buddhist = toBuddhistDate(date);
+console.log(\`Buddhist year: \${buddhist.year}\`);
+// { year: 2568, ... }
+
+// Persian/Jalali calendar
+const persian = toPersianDate(date);
+console.log(\`Persian: \${persian.year}-\${persian.month}-\${persian.day}\`);
+
+// Chinese zodiac
+console.log('2024 zodiac:', getChineseZodiac(2024)); // 'Dragon'
+console.log('2025 zodiac:', getChineseZodiac(2025)); // 'Snake'`
+      }
+    ]
+  },
+  {
+    name: 'Temporal',
+    slug: 'temporal',
+    description: 'Temporal API compatibility layer',
+    examples: [
+      {
+        title: 'Temporal-like Objects',
+        description: 'Future-proof with Temporal-inspired API',
+        code: `import {
+  toPlainDate, toPlainDateTime, toZonedDateTime, toInstant
+} from 'ts-time-utils/temporal';
+
+// PlainDate - date without time
+const date = toPlainDate(2025, 9, 14);
+console.log(date.year, date.month, date.day);
+// 2025, 9, 14
+
+console.log(date.dayOfWeek);    // 7 (Sunday, ISO)
+console.log(date.dayOfYear);    // 257
+console.log(date.weekOfYear);   // 37
+
+// Date arithmetic
+const nextWeek = date.add({ days: 7 });
+console.log(nextWeek.toString()); // "2025-09-21"
+
+const diff = date.until(nextWeek);
+console.log(diff.days); // 7
+
+// PlainDateTime - date with time, no timezone
+const dt = toPlainDateTime(2025, 9, 14, 10, 30, 0);
+console.log(dt.hour, dt.minute); // 10, 30
+
+// ZonedDateTime - date with timezone
+const zdt = toZonedDateTime(new Date(), 'America/New_York');
+console.log('NY hour:', zdt.hour);
+console.log('Timezone:', zdt.timeZone);
+
+// Convert to different zone
+const tokyo = zdt.withTimeZone('Asia/Tokyo');
+console.log('Tokyo hour:', tokyo.hour);
+
+// Instant - epoch-based moment in time
+const instant = toInstant(Date.now());
+console.log('Epoch ms:', instant.epochMilliseconds);
+
+const inUTC = instant.toZonedDateTime('UTC');
+console.log('UTC:', inUTC.toString());`
+      }
+    ]
+  },
+  {
+    name: 'Precision',
+    slug: 'precision',
+    description: 'Nanoseconds, BigInt, DST detection, and leap seconds',
+    examples: [
+      {
+        title: 'High-Precision Utilities',
+        description: 'Nanosecond timestamps and advanced date handling',
+        code: `import {
+  createNanosecondTimestamp, nowNanoseconds,
+  toBigIntMs, ValidDate, isInDSTGap, leapSecondsBetween
+} from 'ts-time-utils/precision';
+
+// Nanosecond-precision timestamps
+const ts = createNanosecondTimestamp(Date.now(), 500000);
+console.log('Milliseconds:', ts.milliseconds);
+console.log('Nanoseconds:', ts.nanoseconds);
+console.log('Total (BigInt):', ts.totalNanoseconds);
+
+// Current time in nanoseconds
+const now = nowNanoseconds();
+console.log('Now (ns):', now.totalNanoseconds);
+
+// BigInt timestamps for large date ranges
+const bigMs = toBigIntMs(new Date());
+console.log('BigInt ms:', bigMs);
+
+// Validated dates (never invalid)
+const valid = ValidDate.from(new Date('2025-09-14'));
+console.log('Valid date:', valid.toDate());
+
+// Returns null for invalid dates
+const maybe = ValidDate.tryFrom(new Date('invalid'));
+console.log('Invalid date:', maybe); // null
+
+// DST gap detection
+// 2am doesn't exist on DST spring-forward day
+const dstGap = new Date('2024-03-10T02:30:00');
+console.log('Is in DST gap?', isInDSTGap(dstGap, 'America/New_York'));
+
+// Leap seconds between dates
+const date1 = new Date('2015-01-01');
+const date2 = new Date('2025-01-01');
+const leapSecs = leapSecondsBetween(date1, date2);
+console.log(\`Leap seconds between dates: \${leapSecs}\`);`
+      }
+    ]
   }
 ];
 
