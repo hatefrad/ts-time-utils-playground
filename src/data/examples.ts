@@ -1221,6 +1221,281 @@ console.log('UTC:', inUTC.toString());`
     ]
   },
   {
+    name: 'Finance',
+    slug: 'finance',
+    description: 'Market hours, trading days, settlement dates, and options expiration',
+    examples: [
+      {
+        title: 'Market Hours',
+        description: 'Check market open/close times and trading status',
+        code: `import { isMarketOpen, isTradingDay, getMarketOpen, getMarketClose, getNextMarketOpen } from 'ts-time-utils/finance';
+
+// Check if market is currently open
+console.log('NYSE open now?', isMarketOpen(new Date(), 'NYSE'));
+
+// Check if today is a trading day
+console.log('Is trading day?', isTradingDay(new Date()));
+
+// Get market hours for a specific date
+const date = new Date('2025-01-15');
+console.log('Market opens:', getMarketOpen(date));
+console.log('Market closes:', getMarketClose(date));
+
+// Find next market open (skips weekends & holidays)
+const nextOpen = getNextMarketOpen(new Date());
+console.log('Next market open:', nextOpen);`
+      },
+      {
+        title: 'Trading Days & Settlement',
+        description: 'Calculate trading days and settlement dates',
+        code: `import { addTradingDays, countTradingDays, eachTradingDay, getSettlementDate, isMarketHoliday } from 'ts-time-utils/finance';
+
+const start = new Date('2025-01-15');
+
+// Add trading days (skips weekends & holidays)
+const fiveDaysLater = addTradingDays(start, 5);
+console.log('5 trading days later:', fiveDaysLater);
+
+// Count trading days in range
+const end = new Date('2025-01-31');
+console.log('Trading days:', countTradingDays(start, end));
+
+// Get all trading days in range
+const tradingDays = eachTradingDay(start, end);
+console.log('First 5 trading days:', tradingDays.slice(0, 5));
+
+// T+2 settlement date
+const settlement = getSettlementDate(start, 2);
+console.log('T+2 settlement:', settlement);
+
+// Check market holidays
+console.log('Is Christmas a holiday?', isMarketHoliday(new Date('2025-12-25')));`
+      },
+      {
+        title: 'Options Expiration',
+        description: 'Calculate options expiration dates',
+        code: `import { getOptionsExpiration } from 'ts-time-utils/finance';
+
+// Monthly options (3rd Friday)
+const monthlyExp = getOptionsExpiration(2025, 1, 'monthly');
+console.log('January monthly expiration:', monthlyExp);
+
+// Quarterly options (Mar, Jun, Sep, Dec)
+const quarterlyExp = getOptionsExpiration(2025, 3, 'quarterly');
+console.log('Q1 quarterly expiration:', quarterlyExp);
+
+// Get expiration for each month
+for (let month = 1; month <= 12; month++) {
+  const exp = getOptionsExpiration(2025, month, 'monthly');
+  console.log(\`\${month}/2025 expiration: \${exp.toDateString()}\`);
+}`
+      }
+    ]
+  },
+  {
+    name: 'Healthcare',
+    slug: 'healthcare',
+    description: 'Medication schedules, shift patterns, on-call rotations, and compliance',
+    examples: [
+      {
+        title: 'Medication Timing',
+        description: 'Calculate medication administration times',
+        code: `import { getMedicationTimes, getNextMedicationTime, parseMedicationFrequency } from 'ts-time-utils/healthcare';
+
+const today = new Date('2025-01-15');
+
+// QD = once daily
+const qdTimes = getMedicationTimes(today, 'QD');
+console.log('QD (once daily):', qdTimes);
+
+// BID = twice daily
+const bidTimes = getMedicationTimes(today, 'BID');
+console.log('BID (twice daily):', bidTimes);
+
+// TID = three times daily
+const tidTimes = getMedicationTimes(today, 'TID');
+console.log('TID (three times daily):', tidTimes);
+
+// q8h = every 8 hours
+const q8hTimes = getMedicationTimes(today, 'q8h');
+console.log('q8h (every 8 hours):', q8hTimes);
+
+// Get next medication time after 10am
+const next = getNextMedicationTime(new Date('2025-01-15T10:00:00'), 'BID');
+console.log('Next BID dose after 10am:', next);
+
+// Parse frequency string
+console.log('Parse "bid":', parseMedicationFrequency('bid'));`
+      },
+      {
+        title: 'Shift Scheduling',
+        description: 'Generate shift schedules and check assignments',
+        code: `import { generateShiftSchedule, getShiftForTime, isOnShift, calculateRestBetweenShifts } from 'ts-time-utils/healthcare';
+
+const config = { pattern: '12hr', startTime: { hour: 7, minute: 0 } };
+
+// Generate 3-day shift schedule
+const shifts = generateShiftSchedule(
+  new Date('2025-01-15'),
+  new Date('2025-01-17'),
+  config
+);
+
+shifts.forEach((shift, i) => {
+  console.log(\`Shift \${i + 1}: \${shift.start.toLocaleString()} - \${shift.end.toLocaleString()}\`);
+});
+
+// Get shift for a specific time
+const currentShift = getShiftForTime(new Date('2025-01-15T14:00:00'), config);
+console.log('Current shift:', currentShift);
+
+// Check if on shift
+console.log('On shift at 2pm?', isOnShift(
+  new Date('2025-01-15T14:00:00'),
+  new Date('2025-01-15T07:00:00'),
+  config
+));
+
+// Calculate rest between shifts
+const rest = calculateRestBetweenShifts(
+  new Date('2025-01-15T19:00:00'),
+  new Date('2025-01-16T07:00:00')
+);
+console.log('Rest hours:', rest);`
+      },
+      {
+        title: 'On-Call Rotation',
+        description: 'Create and query on-call schedules',
+        code: `import { createOnCallRotation, getOnCallStaff, getComplianceDeadline, isWithinComplianceWindow, timeUntilDeadline } from 'ts-time-utils/healthcare';
+
+// Create 1-week on-call rotation
+const staff = ['Dr. Smith', 'Dr. Jones', 'Dr. Brown', 'Dr. Wilson'];
+const rotation = createOnCallRotation(
+  new Date('2025-01-15'),
+  new Date('2025-01-22'),
+  staff,
+  24 // 24-hour shifts
+);
+
+rotation.forEach(slot => {
+  console.log(\`\${slot.staff}: \${slot.start.toDateString()}\`);
+});
+
+// Who's on call at 3am on Jan 16?
+const onCall = getOnCallStaff(new Date('2025-01-16T03:00:00'), rotation);
+console.log('On call at 3am:', onCall);
+
+// Compliance window (e.g., 72-hour documentation deadline)
+const event = new Date('2025-01-15T08:00:00');
+const deadline = getComplianceDeadline(event, 72);
+console.log('Documentation deadline:', deadline);
+
+// Check if compliant
+const documented = new Date('2025-01-17T10:00:00');
+console.log('Within window?', isWithinComplianceWindow(documented, deadline));
+
+// Time remaining
+const remaining = timeUntilDeadline(new Date(), deadline);
+console.log('Time until deadline:', remaining?.toString());`
+      }
+    ]
+  },
+  {
+    name: 'Scheduling',
+    slug: 'scheduling',
+    description: 'Slot generation, availability checking, and conflict detection',
+    examples: [
+      {
+        title: 'Generate Time Slots',
+        description: 'Create bookable time slots for a day or range',
+        code: `import { generateSlots, generateSlotsForRange } from 'ts-time-utils/scheduling';
+
+// Generate 30-minute slots for a day
+const slots = generateSlots(new Date('2025-01-15'), { slotDuration: 30 });
+console.log(\`Generated \${slots.length} slots\`);
+
+slots.slice(0, 5).forEach(slot => {
+  console.log(\`\${slot.start.toLocaleTimeString()} - \${slot.end.toLocaleTimeString()}: \${slot.available ? 'Available' : 'Booked'}\`);
+});
+
+// Generate slots for a date range
+const range = {
+  start: new Date('2025-01-15'),
+  end: new Date('2025-01-17')
+};
+const rangeSlots = generateSlotsForRange(range, { slotDuration: 60 });
+console.log(\`Generated \${rangeSlots.length} slots across range\`);`
+      },
+      {
+        title: 'Availability & Conflicts',
+        description: 'Check availability and detect booking conflicts',
+        code: `import { getAvailableSlots, findNextAvailable, isSlotAvailable, findConflicts, hasConflict } from 'ts-time-utils/scheduling';
+
+// Existing bookings
+const bookings = [
+  { start: new Date('2025-01-15T10:00'), end: new Date('2025-01-15T11:00'), id: 'meeting-1' },
+  { start: new Date('2025-01-15T14:00'), end: new Date('2025-01-15T15:30'), id: 'meeting-2' },
+];
+
+// Get available slots
+const available = getAvailableSlots(new Date('2025-01-15'), bookings, { slotDuration: 30 });
+console.log(\`\${available.length} available slots\`);
+
+// Find next 1-hour slot
+const nextSlot = findNextAvailable(new Date('2025-01-15T09:00'), bookings, 60);
+console.log('Next 1-hour slot:', nextSlot?.start.toLocaleTimeString());
+
+// Check if specific slot is available
+const proposed = { start: new Date('2025-01-15T10:30'), end: new Date('2025-01-15T11:30') };
+console.log('Is 10:30-11:30 available?', isSlotAvailable(proposed, bookings));
+
+// Find conflicts
+const conflicts = findConflicts(bookings, proposed);
+console.log('Conflicts:', conflicts.map(c => c.id));
+
+// Quick conflict check
+console.log('Has conflict?', hasConflict(bookings, proposed));`
+      },
+      {
+        title: 'Buffer & Merge',
+        description: 'Add buffers between bookings and merge adjacent slots',
+        code: `import { addBuffer, removeBuffer, mergeBookings, splitSlot } from 'ts-time-utils/scheduling';
+
+// Add 15-minute buffer around a meeting
+const meeting = {
+  start: new Date('2025-01-15T10:00'),
+  end: new Date('2025-01-15T11:00')
+};
+
+const buffered = addBuffer(meeting, 15);
+console.log('With buffer:', buffered.start.toLocaleTimeString(), '-', buffered.end.toLocaleTimeString());
+// 09:45 - 11:15
+
+const original = removeBuffer(buffered, 15);
+console.log('Without buffer:', original.start.toLocaleTimeString(), '-', original.end.toLocaleTimeString());
+
+// Merge adjacent bookings
+const bookings = [
+  { start: new Date('2025-01-15T09:00'), end: new Date('2025-01-15T10:00') },
+  { start: new Date('2025-01-15T10:00'), end: new Date('2025-01-15T11:00') },
+  { start: new Date('2025-01-15T14:00'), end: new Date('2025-01-15T15:00') },
+];
+
+const merged = mergeBookings(bookings);
+console.log(\`\${bookings.length} bookings merged to \${merged.length}\`);
+
+// Split a slot
+const slot = { start: new Date('2025-01-15T09:00'), end: new Date('2025-01-15T11:00'), available: true };
+const result = splitSlot(slot, new Date('2025-01-15T10:00'));
+if (result) {
+  const [before, after] = result;
+  console.log('Before:', before.start.toLocaleTimeString(), '-', before.end.toLocaleTimeString());
+  console.log('After:', after.start.toLocaleTimeString(), '-', after.end.toLocaleTimeString());
+}`
+      }
+    ]
+  },
+  {
     name: 'Precision',
     slug: 'precision',
     description: 'Nanoseconds, BigInt, DST detection, and leap seconds',
