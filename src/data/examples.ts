@@ -183,6 +183,60 @@ console.log(isBetween(date1, start, end)); // true`
     ]
   },
   {
+    name: 'Constants',
+    slug: 'constants',
+    description: 'Time conversion constants and shared utility types',
+    examples: [
+      {
+        title: 'Time Conversion Constants',
+        description: 'Use built-in constants instead of repeating conversion math',
+        code: `import {
+  MILLISECONDS_PER_MINUTE,
+  MILLISECONDS_PER_HOUR,
+  MILLISECONDS_PER_DAY,
+  SECONDS_PER_HOUR,
+} from 'ts-time-utils/constants';
+
+const timeoutMinutes = 15;
+const timeoutMs = timeoutMinutes * MILLISECONDS_PER_MINUTE;
+console.log(timeoutMs);
+// 900000
+
+const eventDurationHours = 36;
+console.log(eventDurationHours * MILLISECONDS_PER_HOUR);
+// 129600000
+
+console.log(MILLISECONDS_PER_DAY);
+// 86400000
+
+console.log(SECONDS_PER_HOUR);
+// 3600`
+      },
+      {
+        title: 'Typed Time Units',
+        description: 'Reuse the shared time-unit types in your own helpers',
+        code: `import type { TimeUnit, FormatOptions } from 'ts-time-utils/constants';
+
+function normalizeUnit(unit: TimeUnit): TimeUnit {
+  if (unit === 'hours') return 'hour';
+  if (unit === 'minutes') return 'minute';
+  return unit;
+}
+
+const options: FormatOptions = {
+  short: true,
+  maxUnits: 2,
+};
+
+console.log(normalizeUnit('hours'));
+// "hour"
+
+console.log(options);
+// { short: true, maxUnits: 2 }`
+      }
+    ]
+  },
+  {
     name: 'Duration',
     slug: 'duration',
     description: 'Immutable Duration class with arithmetic operations',
@@ -292,7 +346,7 @@ console.log(isDST(summer, 'America/New_York')); // true
 console.log(isDST(winter, 'America/New_York')); // false
 
 // Find next DST transition
-const nextTransition = getNextDSTTransition('America/New_York');
+const nextTransition = getNextDSTTransition(new Date('2025-01-14'), 'America/New_York');
 console.log(nextTransition);`
       }
     ]
@@ -316,8 +370,8 @@ console.log(getWeekNumber(date)); // 37
 console.log(getQuarter(date)); // 3
 
 // Days in month/year
-console.log(getDaysInMonth(9, 2025)); // 30
-console.log(getDaysInMonth(2, 2024)); // 29 (leap year)
+console.log(getDaysInMonth(2025, 8)); // 30 (September, zero-based month)
+console.log(getDaysInMonth(2024, 1)); // 29 (February in a leap year)
 console.log(getDaysInYear(2024)); // 366
 console.log(getDaysInYear(2025)); // 365`
       },
@@ -821,9 +875,8 @@ console.log('Detected locale:', detectLocale());`
 
 // Define working hours config
 const config = {
-  workDays: [1, 2, 3, 4, 5], // Mon-Fri
-  startHour: 9,
-  endHour: 17,
+  workingDays: [1, 2, 3, 4, 5], // Mon-Fri
+  hours: { start: 9, end: 17 },
   breaks: [{ start: 12, end: 13 }] // Lunch break
 };
 

@@ -15,6 +15,6 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-    "ts-time-utils": "^4.1.0"
+    "ts-time-utils": "^4.4.0"
   }
 }

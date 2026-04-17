@@ -24,7 +24,7 @@ console.log(total.toString());
 const features = [
   { icon: '📦', title: 'Lightweight', desc: 'Zero dependencies, pure TypeScript' },
   { icon: '🌳', title: 'Tree-shakable', desc: 'Import only what you need' },
-  { icon: '⚡', title: '320+ Functions', desc: '26 utility categories' },
+  { icon: '⚡', title: '430+ Functions', desc: '32 public modules and interactive guides' },
   { icon: '🔧', title: 'TypeScript', desc: 'Full type safety & IntelliSense' },
 ];
 ---
@@ -32,11 +32,14 @@ const features = [
 <Layout title="Home">
   <!-- Hero -->
   <section class="py-16 text-center">
+    <div class="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-xs font-medium tracking-wide text-blue-300 mb-6">
+      Documentation synced for ts-time-utils v4.4.0
+    </div>
     <h1 class="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">
       ts-time-utils
     </h1>
     <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-      A comprehensive TypeScript utility library for time, dates, durations, and calendar operations
+      A comprehensive TypeScript utility library for time, dates, durations, and calendar operations, with examples aligned to the current public API surface.
     </p>
 
     <div class="flex justify-center gap-4 mb-8">
@@ -83,6 +86,9 @@ const features = [
   <!-- Categories -->
   <section class="py-12">
     <h2 class="text-2xl font-bold mb-6 text-center">Explore Categories</h2>
+    <p class="text-center text-sm text-gray-500 mb-6 max-w-2xl mx-auto">
+      Browse 32 focused guides, then open any example in StackBlitz with the v4.4.0 package pinned.
+    </p>
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {categories.map(({ name, slug, description }) => (
         <a

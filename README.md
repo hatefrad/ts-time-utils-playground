@@ -5,8 +5,9 @@ Interactive playground and documentation for [ts-time-utils](https://github.com/
 ## Features
 
 - Live code examples with StackBlitz integration
-- 27 utility categories documented
+- 32 interactive categories documented
 - Run and modify examples in browser
+- StackBlitz projects pinned to `ts-time-utils@4.4.0`
 
 ## Categories
 
@@ -15,6 +16,7 @@ Interactive playground and documentation for [ts-time-utils](https://github.com/
 | Format | Duration formatting, time ago, date patterns |
 | Calculate | Date arithmetic, differences, rounding |
 | Validate | Date validation, comparisons, type checks |
+| Constants | Time constants and shared utility types |
 | Duration | Immutable Duration class with arithmetic |
 | Timezone | Timezone conversions, DST handling |
 | Calendar | ISO weeks, quarters, US holidays |
