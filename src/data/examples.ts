@@ -295,7 +295,10 @@ console.log(d1.equals(Duration.fromMinutes(120))); // true
 // Array utilities
 const durations = [d1, d2, Duration.fromHours(1)];
 console.log(sumDurations(...durations).toString()); // "3h 30m"
-console.log(maxDuration(...durations).toString()); // "2h"`
+const longest = maxDuration(...durations);
+if (longest) {
+  console.log(longest.toString()); // "2h"
+}`
       }
     ]
   },
@@ -539,10 +542,10 @@ const next = getNextCronDate('0 9 * * 1-5'); // Next weekday 9am
 console.log('Next weekday 9am:', next);
 
 // Use presets
-console.log(CRON_PRESETS.DAILY);    // "0 0 * * *"
-console.log(CRON_PRESETS.WEEKLY);   // "0 0 * * 0"
-console.log(CRON_PRESETS.MONTHLY);  // "0 0 1 * *"
-console.log(CRON_PRESETS.WEEKDAYS); // "0 0 * * 1-5"`
+console.log(CRON_PRESETS.everyDay);   // "0 0 * * *"
+console.log(CRON_PRESETS.everyWeek);  // "0 0 * * 0"
+console.log(CRON_PRESETS.everyMonth); // "0 0 1 * *"
+console.log(CRON_PRESETS.weekdays);   // "0 0 * * 1-5"`
       }
     ]
   },
@@ -602,12 +605,19 @@ console.log(sortDates(dates, 'asc').map(d => d.toDateString()));
 console.log(sortDates(dates, 'desc').map(d => d.toDateString()));
 
 // Find min/max
-console.log('Earliest:', minDate(dates).toDateString());
-console.log('Latest:', maxDate(dates).toDateString());
+const earliest = minDate(dates);
+const latest = maxDate(dates);
+if (earliest && latest) {
+  console.log('Earliest:', earliest.toDateString());
+  console.log('Latest:', latest.toDateString());
+}
 
 // Find closest to target
 const target = new Date('2025-07-01');
-console.log('Closest to July 1:', closestDate(target, dates).toDateString());`
+const closest = closestDate(target, dates);
+if (closest) {
+  console.log('Closest to July 1:', closest.toDateString());
+}`
       },
       {
         title: 'Group Dates',
@@ -926,7 +936,7 @@ console.log(serializeDate(date, { format: 'iso' }));
 console.log(serializeDate(date, { format: 'epoch' }));
 // 1757853045123
 
-console.log(serializeDate(date, { format: 'date-only' }));
+console.log(serializeDate(date, { format: 'custom', customFormat: 'YYYY-MM-DD' }));
 // "2025-09-14"
 
 // Stringify objects with date fields
@@ -982,11 +992,11 @@ async function benchmarkDemo() {
 const stopwatch = new Stopwatch();
 stopwatch.start();
 // ... do some work ...
-stopwatch.lap(); // Record lap
-// ... more work ...
+stopwatch.pause();
+console.log('Paused?', stopwatch.isPaused());
+stopwatch.resume();
 console.log('Elapsed:', stopwatch.getElapsed(), 'ms');
-console.log('Laps:', stopwatch.getLaps());
-stopwatch.stop();
+console.log('Stopped at:', stopwatch.stop(), 'ms');
 
 // Debounce (wait until calls stop)
 const debouncedSave = debounce((data) => {
@@ -1021,10 +1031,11 @@ console.log(\`Total months: \${age.totalMonths}\`);
 console.log(\`Total days: \${age.totalDays}\`);
 
 // Get life stage
-console.log(getLifeStage(5));   // "child"
-console.log(getLifeStage(15));  // "teenager"
-console.log(getLifeStage(25));  // "adult"
-console.log(getLifeStage(65));  // "senior"
+console.log(getLifeStage(new Date('2024-01-15'))); // "infant"
+console.log(getLifeStage(new Date('2018-01-15'))); // "child"
+console.log(getLifeStage(new Date('2010-01-15'))); // "teen"
+console.log(getLifeStage(new Date('1990-01-15'))); // "adult"
+console.log(getLifeStage(new Date('1940-01-15'))); // "senior"
 
 // Next birthday
 const nextBday = getNextBirthday(birthDate);
@@ -1098,35 +1109,42 @@ countdown.start();
       {
         title: 'Interval Operations',
         description: 'Work with time intervals and check overlaps',
-        code: `import { createInterval, intervalsOverlap, mergeIntervals, subtractInterval } from 'ts-time-utils/interval';
+        code: `import {
+  createInterval, intervalsOverlap, mergeIntervals,
+  subtractInterval, intervalDuration
+} from 'ts-time-utils/interval';
 
 // Create intervals
 const meeting1 = createInterval('2025-01-15T09:00', '2025-01-15T10:00');
 const meeting2 = createInterval('2025-01-15T09:30', '2025-01-15T11:00');
 const meeting3 = createInterval('2025-01-15T14:00', '2025-01-15T15:00');
 
-console.log('Meeting 1:', meeting1.start, '-', meeting1.end);
+if (meeting1 && meeting2 && meeting3) {
+  console.log('Meeting 1:', meeting1.start, '-', meeting1.end);
 
-// Check overlap
-console.log('1 & 2 overlap?', intervalsOverlap(meeting1, meeting2));
-// true
+  // Check overlap
+  console.log('1 & 2 overlap?', intervalsOverlap(meeting1, meeting2));
+  // true
 
-console.log('1 & 3 overlap?', intervalsOverlap(meeting1, meeting3));
-// false
+  console.log('1 & 3 overlap?', intervalsOverlap(meeting1, meeting3));
+  // false
 
-// Merge overlapping intervals
-const allMeetings = [meeting1, meeting2, meeting3];
-const merged = mergeIntervals(allMeetings);
-console.log(\`\${allMeetings.length} meetings merged to \${merged.length}\`);
-// "3 meetings merged to 2"
+  // Merge overlapping intervals
+  const allMeetings = [meeting1, meeting2, meeting3];
+  const merged = mergeIntervals(allMeetings);
+  console.log(\`\${allMeetings.length} meetings merged to \${merged.length}\`);
+  // "3 meetings merged to 2"
 
-// Subtract interval (find free time)
-const workday = createInterval('2025-01-15T08:00', '2025-01-15T18:00');
-const freeSlots = subtractInterval(workday, meeting1);
-console.log('Free slots after removing meeting 1:', freeSlots.length);
+  // Subtract interval (find free time)
+  const workday = createInterval('2025-01-15T08:00', '2025-01-15T18:00');
+  if (workday) {
+    const freeSlots = subtractInterval(workday, meeting1);
+    console.log('Free slots after removing meeting 1:', freeSlots.length);
+  }
 
-// Get interval duration
-console.log('Meeting 1 duration:', meeting1.duration, 'ms');`
+  // Get interval duration
+  console.log('Meeting 1 duration:', intervalDuration(meeting1), 'ms');
+}`
       }
     ]
   },
@@ -1143,7 +1161,7 @@ console.log('Meeting 1 duration:', meeting1.duration, 'ms');`
   lastNDays, nextNDays,
   thisWeek, lastWeek, nextWeek,
   thisMonth, lastMonth, nextMonth,
-  thisQuarter, thisYear
+  quarterRange, thisYear
 } from 'ts-time-utils/rangePresets';
 
 // Today's range (start to end of day)
@@ -1172,7 +1190,7 @@ console.log('This month:', thisMonth().start.toDateString());
 console.log('Last month:', lastMonth().start.toDateString());
 
 // Quarter and year
-console.log('This quarter:', thisQuarter().start.toDateString());
+console.log('This quarter:', quarterRange().start.toDateString());
 console.log('This year:', thisYear().start.toDateString());`
       }
     ]
@@ -1261,7 +1279,7 @@ console.log('NY hour:', zdt.hour);
 console.log('Timezone:', zdt.timeZone);
 
 // Convert to different zone
-const tokyo = zdt.withTimeZone('Asia/Tokyo');
+const tokyo = zdt.toInstant().toZonedDateTime('Asia/Tokyo');
 console.log('Tokyo hour:', tokyo.hour);
 
 // Instant - epoch-based moment in time
@@ -1383,9 +1401,15 @@ console.log('Parse "bid":', parseMedicationFrequency('bid'));`
       {
         title: 'Shift Scheduling',
         description: 'Generate shift schedules and check assignments',
-        code: `import { generateShiftSchedule, getShiftForTime, isOnShift, calculateRestBetweenShifts } from 'ts-time-utils/healthcare';
+        code: `import {
+  generateShiftSchedule, getShiftForTime, isOnShift,
+  calculateRestBetweenShifts, type ShiftConfig
+} from 'ts-time-utils/healthcare';
 
-const config = { pattern: '12hr', startTime: { hour: 7, minute: 0 } };
+const config: ShiftConfig = {
+  pattern: '12hr',
+  startTime: { hour: 7, minute: 0 }
+};
 
 // Generate 3-day shift schedule
 const shifts = generateShiftSchedule(
@@ -1577,7 +1601,7 @@ console.log('BigInt ms:', bigMs);
 
 // Validated dates (never invalid)
 const valid = ValidDate.from(new Date('2025-09-14'));
-console.log('Valid date:', valid.toDate());
+console.log('Valid date:', valid.value);
 
 // Returns null for invalid dates
 const maybe = ValidDate.tryFrom(new Date('invalid'));

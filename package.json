@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "validate-examples": "node scripts/validate-examples.mjs",
+    "run-examples": "node scripts/run-examples.mjs"
   },
   "dependencies": {
     "@stackblitz/sdk": "^1.11.0",
