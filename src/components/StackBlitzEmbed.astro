@@ -20,6 +20,7 @@ const id = `stackblitz-${Math.random().toString(36).slice(2, 9)}`;
     el.dataset.initialized = 'true';
 
     const code = el.dataset.code || '';
+    const stackblitzCode = code.replace(/from 'ts-time-utils\/[^']+'/g, "from 'ts-time-utils'");
     const title = el.dataset.title || 'ts-time-utils playground';
 
     sdk.embedProject(el, {
@@ -27,8 +28,7 @@ const id = `stackblitz-${Math.random().toString(36).slice(2, 9)}`;
       template: 'typescript',
       dependencies: { 'ts-time-utils': '4.4.1' },
       files: {
-        'index.html': '<script type="module" src="/index.ts"></scr' + 'ipt>',
-        'index.ts': code,
+        'index.ts': stackblitzCode,
         'tsconfig.json': JSON.stringify({
           compilerOptions: {
             target: 'ES2020',
