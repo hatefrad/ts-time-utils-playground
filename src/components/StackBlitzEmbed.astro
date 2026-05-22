@@ -48,7 +48,8 @@ const id = `stackblitz-${Math.random().toString(36).slice(2, 9)}`;
     }, {
       height: parseInt(el.style.height) || 400,
       openFile: 'index.ts',
-      terminalHeight: 30
+      terminalHeight: 30,
+      crossOriginIsolated: true
     });
   });
 </script>
