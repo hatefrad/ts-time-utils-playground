@@ -77,7 +77,7 @@ console.log(formatTime(date, '24h'));
       {
         title: 'Date Differences',
         description: 'Calculate the difference between dates in any unit',
-        code: `import { differenceInUnits, addTime, subtractTime } from 'ts-time-utils/calculate';
+        code: `import { differenceInUnits, differenceInCalendarDays, addTime, subtractTime } from 'ts-time-utils/calculate';
 
 const date1 = new Date('2025-01-01');
 const date2 = new Date('2025-09-14');
@@ -91,6 +91,13 @@ console.log(differenceInUnits(date1, date2, 'months'));
 
 console.log(differenceInUnits(date1, date2, 'weeks'));
 // 36
+
+// Count local calendar date boundaries, ignoring time of day
+console.log(differenceInCalendarDays(
+  new Date('2026-05-22T21:17:00'),
+  new Date('2026-05-24T00:00:00')
+));
+// 2
 
 // Add/subtract time
 console.log(addTime(new Date(), 5, 'hours'));

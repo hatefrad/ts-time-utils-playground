@@ -7,7 +7,7 @@ Interactive playground and documentation for [ts-time-utils](https://github.com/
 - Live code examples with StackBlitz integration
 - 32 interactive categories documented
 - Run and modify examples in browser
-- StackBlitz projects pinned to `ts-time-utils@4.4.0`
+- StackBlitz projects pinned to `ts-time-utils@4.4.1`
 
 ## Categories
 
