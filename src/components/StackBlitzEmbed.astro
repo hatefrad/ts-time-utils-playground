@@ -27,6 +27,7 @@ const id = `stackblitz-${Math.random().toString(36).slice(2, 9)}`;
       template: 'typescript',
       dependencies: { 'ts-time-utils': '4.4.1' },
       files: {
+        'index.html': '<script type="module" src="/index.ts"></scr' + 'ipt>',
         'index.ts': code,
         'tsconfig.json': JSON.stringify({
           compilerOptions: {
