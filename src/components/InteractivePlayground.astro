@@ -1,0 +1,223 @@
+---
+interface Props {
+  code: string;
+  height?: number;
+}
+
+const { code, height = 420 } = Astro.props;
+---
+
+<div class="playground overflow-hidden rounded-lg border border-gray-700 bg-gray-950" data-code={code}>
+  <div class="grid lg:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.75fr)]" style={`min-height: ${height}px`}>
+    <div class="min-w-0 border-b border-gray-800 lg:border-b-0 lg:border-r">
+      <div class="flex h-10 items-center justify-between border-b border-gray-800 bg-gray-900 px-3">
+        <span class="text-xs font-medium text-blue-300">index.ts</span>
+        <button type="button" class="playground-run rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white hover:bg-blue-500">
+          Run
+        </button>
+      </div>
+      <textarea
+        class="playground-code block h-full min-h-[320px] w-full resize-y bg-gray-950 p-4 font-mono text-sm leading-6 text-gray-100 outline-none"
+        spellcheck="false"
+      >{code}</textarea>
+    </div>
+    <div class="min-w-0 bg-gray-900">
+      <div class="flex h-10 items-center border-b border-gray-800 px-3">
+        <span class="playground-status text-xs font-medium text-gray-300">Console</span>
+      </div>
+      <div class="playground-output min-h-[320px] overflow-auto p-4 font-mono text-sm leading-6 text-gray-100">
+        Press Run to execute the example.
+      </div>
+    </div>
+  </div>
+  <iframe class="playground-frame hidden" sandbox="allow-scripts"></iframe>
+</div>
+
+<script>
+  const CDN_BASE = 'https://esm.sh/ts-time-utils@4.4.1';
+  const CONSOLE_LABEL_PREFIX = '__TS_TIME_UTILS_PLAYGROUND_LABEL__:';
+  const EMPTY_DOCUMENT = '<!doctype html><html><body></body></html>';
+  const RUN_TIMEOUT_MS = 1600;
+  const MAX_CONSOLE_ENTRIES = 50;
+
+  function rewriteImports(source: string): string {
+    return source
+      .replace(/from\s+['"]ts-time-utils(\/[^'"]*)?['"]/g, (_match, subpath = '') => `from '${CDN_BASE}${subpath}'`)
+      .replace(/import\(\s*['"]ts-time-utils(\/[^'"]*)?['"]\s*\)/g, (_match, subpath = '') => `import('${CDN_BASE}${subpath}')`);
+  }
+
+  function annotateSourceConsoleCalls(source: string): string {
+    return source
+      .split('\n')
+      .map((line, index) => line.replace(
+        /\bconsole\.(log|warn|error)\s*\((.*)\)\s*;?\s*$/,
+        (_match, level, expression) => {
+          const label = `${CONSOLE_LABEL_PREFIX}${expression.trim()}`;
+          return `console.${level}(${JSON.stringify(label)}, ${expression});`;
+        },
+      ))
+      .join('\n');
+  }
+
+  function formatValue(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (value instanceof Error) return value.stack || value.message;
+    try {
+      return JSON.stringify(value, (_key, nested) => {
+        if (nested instanceof Date) return nested.toISOString();
+        return nested;
+      }, 2);
+    } catch {
+      return String(value);
+    }
+  }
+
+  function buildSrcDoc(js: string): string {
+    const payload = JSON.stringify(js);
+    return `<!doctype html>
+<html>
+  <body>
+    <script type="module">
+      const send = (type, values = []) => parent.postMessage({ source: 'ts-time-utils-playground', type, values }, '*');
+      for (const level of ['log', 'warn', 'error']) {
+        const original = console[level].bind(console);
+        console[level] = (...args) => {
+          original(...args);
+          send(level, args.map((value) => {
+            if (typeof value === 'string') return value;
+            if (value instanceof Error) return value.stack || value.message;
+            try { return JSON.stringify(value, null, 2); } catch { return String(value); }
+          }));
+        };
+      }
+      window.addEventListener('error', (event) => send('error', [event.message]));
+      window.addEventListener('unhandledrejection', (event) => send('error', [event.reason?.stack || event.reason?.message || String(event.reason)]));
+      try {
+        const source = ${payload};
+        await import(URL.createObjectURL(new Blob([source], { type: 'text/javascript' })));
+        send('done');
+      } catch (error) {
+        send('error', [error?.stack || error?.message || String(error)]);
+      }
+    </scr` + `ipt>
+  </body>
+</html>`;
+  }
+
+  interface ConsoleEntry {
+    label?: string;
+    output: string;
+  }
+
+  function formatConsoleEntry(values: string[]): ConsoleEntry {
+    if (values[0]?.startsWith(CONSOLE_LABEL_PREFIX) && values.length > 1) {
+      return {
+        label: `// ${values[0].slice(CONSOLE_LABEL_PREFIX.length)}`,
+        output: values.slice(1).join(' '),
+      };
+    }
+    return { output: values.join(' ') };
+  }
+
+  document.querySelectorAll<HTMLElement>('.playground').forEach((root) => {
+    const textarea = root.querySelector<HTMLTextAreaElement>('.playground-code');
+    const button = root.querySelector<HTMLButtonElement>('.playground-run');
+    const output = root.querySelector<HTMLElement>('.playground-output');
+    const status = root.querySelector<HTMLElement>('.playground-status');
+    const frame = root.querySelector<HTMLIFrameElement>('.playground-frame');
+    if (!textarea || !button || !output || !status || !frame) return;
+
+    let entries: ConsoleEntry[] = [];
+    let stopTimer: number | undefined;
+
+    const stopRunningCode = () => {
+      if (stopTimer) {
+        window.clearTimeout(stopTimer);
+        stopTimer = undefined;
+      }
+      frame.srcdoc = EMPTY_DOCUMENT;
+    };
+
+    const render = () => {
+      output.replaceChildren();
+
+      if (!entries.length) {
+        output.textContent = '(no output)';
+        return;
+      }
+
+      for (const entry of entries) {
+        const row = document.createElement('div');
+        row.className = 'mb-4 last:mb-0';
+
+        if (entry.label) {
+          const label = document.createElement('div');
+          label.className = 'mb-1 text-[11px] leading-4 text-gray-500';
+          label.textContent = entry.label;
+          row.append(label);
+        }
+
+        const value = document.createElement('div');
+        value.className = 'whitespace-pre-wrap text-sm leading-6 text-gray-100';
+        value.textContent = entry.output;
+        row.append(value);
+
+        output.append(row);
+      }
+    };
+
+    window.addEventListener('message', (event) => {
+      if (event.source !== frame.contentWindow) return;
+      if (event.data?.source !== 'ts-time-utils-playground') return;
+
+      if (event.data.type === 'done') {
+        status.textContent = 'Console';
+        status.className = 'playground-status text-xs font-medium text-green-300';
+        render();
+        return;
+      }
+
+      if (event.data.type === 'error') {
+        status.textContent = 'Error';
+        status.className = 'playground-status text-xs font-medium text-red-300';
+      }
+
+      if (entries.length < MAX_CONSOLE_ENTRIES) {
+        entries.push(formatConsoleEntry((event.data.values || []).map(formatValue)));
+      } else if (entries.length === MAX_CONSOLE_ENTRIES) {
+        entries.push({ output: 'Console output truncated.' });
+      }
+      render();
+    });
+
+    const run = async () => {
+      stopRunningCode();
+      entries = [];
+      output.textContent = 'Running...';
+      status.textContent = 'Running';
+      status.className = 'playground-status text-xs font-medium text-blue-300';
+
+      try {
+        const ts = await import('typescript');
+        const annotatedSource = annotateSourceConsoleCalls(textarea.value);
+        const transpiled = ts.transpileModule(annotatedSource, {
+          compilerOptions: {
+            module: ts.ModuleKind.ESNext,
+            target: ts.ScriptTarget.ES2020,
+            importsNotUsedAsValues: ts.ImportsNotUsedAsValues.Remove,
+          },
+        });
+        frame.srcdoc = buildSrcDoc(rewriteImports(transpiled.outputText));
+        stopTimer = window.setTimeout(stopRunningCode, RUN_TIMEOUT_MS);
+      } catch (error) {
+        stopRunningCode();
+        status.textContent = 'Error';
+        status.className = 'playground-status text-xs font-medium text-red-300';
+        output.textContent = formatValue(error);
+      }
+    };
+
+    button.addEventListener('click', run);
+    run();
+  });
+</script>

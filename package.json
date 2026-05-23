@@ -11,12 +11,12 @@
     "run-examples": "node scripts/run-examples.mjs"
   },
   "dependencies": {
-    "@stackblitz/sdk": "^1.11.0",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.16.6",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-    "ts-time-utils": "^4.4.1"
+    "ts-time-utils": "^4.4.1",
+    "typescript": "^5.9.3"
   }
 }
